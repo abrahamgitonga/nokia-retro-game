@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nokia Football Game ||TWC</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        background: #000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        height: 100vh;
+      }
+      canvas {
+        background: #222;
+        margin-top: 10px;
+      }
+      #controls {
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+      }
+      .btn {
+        background: #333;
+        color: #fff;
+        border: 2px solid #555;
+        padding: 15px 30px;
+        margin: 0 10px;
+        font-size: 20px;
+        border-radius: 10px;
+        touch-action: manipulation;
+      }
+      .btn:active {
+        background: #555;
+      }
+      #startBtn {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <button class="btn" id="startBtn">Start Game</button>
+
+    <canvas
+      id="gameCanvas"
+      width="400"
+      height="500"
+      style="display: none"
+    ></canvas>
+
+    <div id="controls" style="display: none">
+      <button class="btn" id="leftBtn">⮜</button>
+      <button class="btn" id="rightBtn">⮞</button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      const startBtn = document.getElementById("startBtn");
+      const controlsDiv = document.getElementById("controls");
+
+      const restartBtn = document.createElement("button");
+      restartBtn.textContent = "Start Again";
+      restartBtn.className = "btn";
+      restartBtn.style.marginTop = "10px";
+
+      const quitBtn = document.createElement("button");
+      quitBtn.textContent = "Quit";
+      quitBtn.className = "btn";
+      quitBtn.style.marginTop = "10px";
+
+      let player = {
+        x: 180,
+        y: 450,
+        width: 40,
+        height: 10,
+        speed: 5,
+      };
+
+      let ball = {
+        x: Math.random() * 360 + 20,
+        y: 0,
+        radius: 10,
+        speed: 2,
+      };
+
+      let leftPressed = false;
+      let rightPressed = false;
+      let gameOver = false;
+      let score = 0;
+
+      function drawPlayer() {
+        ctx.fillStyle = "lime";
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+      }
+
+      function drawBall() {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      function update() {
+        if (leftPressed && player.x > 0) player.x -= player.speed;
+        if (rightPressed && player.x < canvas.width - player.width)
+          player.x += player.speed;
+
+        ball.y += ball.speed;
+
+        if (
+          ball.y + ball.radius > player.y &&
+          ball.x > player.x &&
+          ball.x < player.x + player.width
+        ) {
+          score++;
+          ball.y = 0;
+          ball.x = Math.random() * (canvas.width - 40) + 20;
+          ball.speed += 0.2;
+        }
+
+        if (ball.y > canvas.height) {
+          gameOver = true;
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPlayer();
+        drawBall();
+
+        ctx.fillStyle = "white";
+        ctx.font = "16px Arial";
+        ctx.fillText("Score: " + score, 10, 20);
+
+        if (gameOver) {
+          ctx.font = "30px Arial";
+          ctx.fillText("Game Over!", 110, 250);
+
+          // Show buttons
+          document.body.appendChild(restartBtn);
+          document.body.appendChild(quitBtn);
+          return;
+        }
+
+        update();
+        requestAnimationFrame(draw);
+      }
+
+      function resetGame() {
+        player.x = 180;
+        player.y = 450;
+        ball.x = Math.random() * 360 + 20;
+        ball.y = 0;
+        ball.speed = 2;
+        score = 0;
+        gameOver = false;
+        restartBtn.remove();
+        quitBtn.remove();
+        draw();
+      }
+
+      restartBtn.onclick = resetGame;
+
+      quitBtn.onclick = () => {
+        restartBtn.remove();
+        quitBtn.remove();
+        canvas.style.display = "none";
+        controlsDiv.style.display = "none";
+        startBtn.style.display = "inline-block";
+      };
+
+      startBtn.addEventListener("click", () => {
+        startBtn.style.display = "none";
+        canvas.style.display = "block";
+        controlsDiv.style.display = "flex";
+        resetGame();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") leftPressed = true;
+        if (e.key === "ArrowRight") rightPressed = true;
+      });
+
+      document.addEventListener("keyup", (e) => {
+        if (e.key === "ArrowLeft") leftPressed = false;
+        if (e.key === "ArrowRight") rightPressed = false;
+      });
+
+      document
+        .getElementById("leftBtn")
+        .addEventListener("touchstart", () => (leftPressed = true));
+      document
+        .getElementById("leftBtn")
+        .addEventListener("touchend", () => (leftPressed = false));
+      document
+        .getElementById("rightBtn")
+        .addEventListener("touchstart", () => (rightPressed = true));
+      document
+        .getElementById("rightBtn")
+        .addEventListener("touchend", () => (rightPressed = false));
+    </script>
+  </body>
+</html>
